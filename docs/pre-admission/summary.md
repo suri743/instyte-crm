@@ -79,7 +79,7 @@ The Pre-Admission module is responsible for handling leads, tracking follow-ups,
 - **[Component Diagram](./component-diagram.png)** – Shows how services connect
 - ![component-diagram.png](component-diagram.png)
 - **[Sequence Diagram](./sequence-diagram.png)** – Illustrates the "Create Lead" flow
-![sequence-diagram.png](../../../sequence-diagram.png)
+![sequence-diagram](https://github.com/user-attachments/assets/df03e47a-399e-4f3a-9060-c738c606468c)
 ## 🎯 Extended Objectives
 
 - Lead scoring and interest classification
