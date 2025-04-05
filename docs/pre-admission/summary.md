@@ -17,12 +17,14 @@ The Pre-Admission module is responsible for handling leads, tracking follow-ups,
 
 ## 🧩 Key Components
 
-| Component          | Responsibility                                      |
-|-------------------|------------------------------------------------------|
-| **UI (Frontend)** | Lead submission form and counselor dashboard         |
-| **PreAdmissionService** | Business logic for leads and follow-ups         |
-| **UserService**    | Counselor data management                           |
-| **PostgreSQL DB**  | Data storage (per-branch schema)                    |
+| Component              | Responsibility                                  |
+|------------------------|--------------------------------------------------|
+| **UI (Frontend)**      | Lead form, counselor dashboard, follow-up views |
+| **PreAdmissionService**| Core logic for leads and follow-ups             |
+| **NotificationService**| (Optional) Sends reminders to counselors         |
+| **AuditLoggerService** | Logs lead-related actions for traceability       |
+| **UserService**        | Counselor/user data                             |
+| **PostgreSQL DB**      | Multi-schema data storage                        |
 
 ---
 
@@ -56,29 +58,62 @@ The Pre-Admission module is responsible for handling leads, tracking follow-ups,
 | phone       | TEXT       | Contact number           |
 | status      | ENUM       | [New, InProgress, Converted, Dropped] |
 | created_at  | TIMESTAMP  | Creation time            |
+| source         | TEXT    | How lead was generated   |
+| interest_level | ENUM    | High / Medium / Low      |
+| score          | INTEGER | Calculated lead score    |
 
 ### `follow_ups`
-| Column       | Type      | Description              |
-|--------------|-----------|--------------------------|
-| id           | UUID      | Primary Key              |
-| lead_id      | UUID      | Foreign Key (leads.id)   |
-| notes        | TEXT      | Notes from counselor     |
-| next_contact | TIMESTAMP | Scheduled next contact   |
+| Column       | Type      | Description               |
+|--------------|-----------|---------------------------|
+| id           | UUID      | Primary Key               |
+| lead_id      | UUID      | Foreign Key (leads.id)    |
+| notes        | TEXT      | Notes from counselor      |
+| next_contact | TIMESTAMP | Scheduled next contact    |
+| next_contact | TIMESTAMP  | Next follow-up date/time  |
+| notification_sent | BOOLEAN    | Flag if reminder was triggered |
 
 ---
 
 ## 🖼️ Diagrams
 
 - **[Component Diagram](./component-diagram.png)** – Shows how services connect
+- ![component-diagram.png](component-diagram.png)
 - **[Sequence Diagram](./sequence-diagram.png)** – Illustrates the "Create Lead" flow
+![sequence-diagram.png](../../../sequence-diagram.png)
+## 🎯 Extended Objectives
+
+- Lead scoring and interest classification
+- Track source of inquiry (e.g., ad, referral)
+- Counselor follow-up scheduling and reminders
+- Notification triggers for follow-ups
+- Action history and audit trail
+
+### `lead_audit_trail`
+| Column         | Type       | Description                          |
+|----------------|------------|--------------------------------------|
+| id             | UUID       | Unique audit record                  |
+| lead_id        | UUID       | FK to leads                          |
+| action         | TEXT       | Action type: create / follow-up etc. |
+| user_id        | UUID       | Counselor/system user                |
+| timestamp      | TIMESTAMP  | Action time                          |
 
 ---
 
-## 💡 Future Enhancements
+## 🔁 Follow-Up Flow
 
-- Lead Scoring using AI
-- Automated follow-up reminders
-- Integration with WhatsApp for instant responses
+1. Counselor adds follow-up with next contact time
+2. System logs the action in `lead_audit_trail`
+3. Optional: NotificationService sends reminder
+4. Follow-up response is saved with notes
+5. Status may be updated to converted/dropped
+
+---
+
+## 🧠 Future AI Integration
+
+- Smart lead scoring based on demographics
+- Automated nudge suggestions
+- Dropout prediction modeling
 
 ---
 
