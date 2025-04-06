@@ -337,3 +337,87 @@ Accessible only via PlatformService
 
 ✅ This Version 2 PRD reflects the **complete modular SaaS product model**, with detailed pricing, core + optional services (including Payment Service), platform owner visibility, subdomain routing, dedicated LB/API gateway per tenant, schema-per-branch support, and performance optimizations for enterprise readiness.
 
+# 📘 Instyte CRM – Product Requirements Document (PRD) – Version 2.1
+
+## 🧭 Version Info
+**Version**: 2.1
+**Date**: April 2025
+**Author**: Surish
+
+---
+
+## 🧩 Core Modules in Detail
+
+### 🧠 AI Engine (New)
+A dedicated Python-based microservice integrated via gRPC for:
+- Real-time inference (via gRPC)
+- Offline training (via event queue or scheduled sync)
+- Receives data through `EventService` and gRPC calls
+
+**Features:**
+- Lead scoring (hot, warm, cold)
+- Attendance anomaly detection
+- Future: dropout risk prediction, feedback summarization
+
+**Interfaces:**
+- gRPC: `scoreLead`, `detectAnomaly`, `predictDropout`
+- Internal DB: JSON/CSV or Mongo/Postgres for training datasets
+
+---
+
+### 🛠 Event Service (New)
+Handles standardized event publication across the platform:
+- Publishes events like `LeadCreated`, `AttendanceMarked`, etc.
+- Used by Search Service and AI Engine
+
+**Metadata Includes:**
+- `eventId`, `eventType`, `sourceService`, `timestamp`, `branchId`, `payload`
+
+**APIs/Methods:**
+- `publishLeadCreated(lead)`
+- `publishAttendanceMarked(attendance)`
+
+**Transport:**
+- RabbitMQ (planned)
+- gRPC (for immediate sync if needed)
+
+**Purpose:**
+- Loose coupling
+- Real-time integration
+- Future extensibility
+
+---
+
+## 🧩 Optional Services (Per Branch)
+
+Add to existing list:
+
+### 🟡 Search Service (New)
+- Real-time search with advanced filters
+- Backed by Elasticsearch
+- Receives data from EventService or batch sync
+
+**Interfaces:**
+- REST API: `/search?q=keyword` with filters (e.g., date, type)
+- gRPC ingestion for data indexing
+
+---
+
+## 🛣 Future Roadmap (Updated)
+- IAM service as separate module
+- Payment Gateway integration
+- Custom white-label branding
+- Audit logging and history
+- Email/SMS config per tenant
+- Public self-onboarding portal
+- Subdomain routing (e.g., dps.instyte.com)
+- Global + Tenant-Level Load Balancers
+- Tenant-scoped API Gateway with circuit breakers
+- ✅ AI Engine integration
+- ✅ EventService for domain event standardization
+- ✅ Search Service using Elasticsearch and gRPC indexing
+
+---
+
+✅ This Version 2.1 PRD reflects the **complete modular SaaS product model**, with detailed pricing, core + optional services, platform owner visibility, schema-per-branch support, and now smart intelligence via AI Engine, standardized events, and a real-time search capability.
+
