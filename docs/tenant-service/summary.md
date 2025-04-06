@@ -1,8 +1,8 @@
-# 🏢 PlatformService – High-Level Design
+# 🏢 TenantService – High-Level Design
 
 ## 🎯 Purpose
 
-PlatformService is the internal, owner-only service that lets you (the SaaS provider) manage:
+TenantService is the internal, owner-only service that lets you (the SaaS provider) manage:
 
 - ✅ Tenant (Customer) onboarding
 - ✅ Initial admin user creation
@@ -40,14 +40,14 @@ PlatformService is the internal, owner-only service that lets you (the SaaS prov
 
 ### `users`
 
-| Field       | Type     | Description                          |
-|-------------|----------|--------------------------------------|
-| id          | UUID     | User ID                              |
-| email       | TEXT     | Login email                          |
-| password    | TEXT     | (hashed in prod)                     |
-| role        | TEXT     | `TENANT_ADMIN` or `PLATFORM_ADMIN`   |
-| tenant_id   | TEXT     | Foreign key to `tenants.id`          |
-| status      | TEXT     | `ACTIVE` / `DISABLED`                |
+| Field       | Type     | Description                 |
+|-------------|----------|-----------------------------|
+| id          | UUID     | User ID                     |
+| email       | TEXT     | Login email                 |
+| password    | TEXT     | (hashed in prod)            |
+| role        | TEXT     | `TENANT_ADMIN` or 'OWNER'    |
+| tenant_id   | TEXT     | Foreign key to `tenants.id` |
+| status      | TEXT     | `ACTIVE` / `DISABLED`       |
 
 ---
 
@@ -67,22 +67,22 @@ PlatformService is the internal, owner-only service that lets you (the SaaS prov
 
 ### 🔹 Tenant Management
 
-- `POST /platform/tenants` → Creates schema + registers tenant
-- `GET /platform/tenants` → List all tenants
-- `DELETE /platform/tenants/{id}` → Optional removal
+- `POST /tenant/tenants` → Creates schema + registers tenant
+- `GET /tenant/tenants` → List all tenants
+- `DELETE /tenant/tenants/{id}` → Optional removal
 
 ---
 
 ### 🔹 User Management
 
-- `POST /platform/tenants/{id}/users` → Creates admin user
-- `GET /platform/users` → List all users (with tenant info)
+- `POST /tenant/tenants/{id}/users` → Creates admin user
+- `GET /tenant/users` → List all users (with tenant info)
 
 ---
 
 ### 🔐 Auth
 
-- `POST /platform/login` → Login as admin, returns JWT
+- `POST /tenant/login` → Login as admin, returns JWT
   ```json
   {
     "token": "jwt-token",
