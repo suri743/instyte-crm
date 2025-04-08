@@ -33,24 +33,25 @@ TenantService is the internal, owner-only service that lets you (the SaaS provid
 
 ### `accounts`
 
-| Field                  | Type      | Description                                  |
-|------------------------|-----------|----------------------------------------------|
-| id                     | UUID      | Unique account ID                            |
-| name                   | TEXT      | Full name                                    |
-| code                   | TEXT      | e.g., `dps`                                  |
-| schema_name            | TEXT      | PostgreSQL schema name                       |
-| admin_email            | TEXT      | Main admin contact                           |
-| status                 | TEXT      | `ACTIVE`, `DISABLED`, `TRIAL_EXPIRED`        |
-| start_date             | DATE      | Date account was created or activated        |
-| trial_end_date         | DATE      | Last day of trial period                     |
-| is_trial               | BOOLEAN   | Indicates if account is in trial mode        |
-| subscription_end_date  | DATE      | Paid plan end date (if applicable)           |
-| plan_type              | TEXT      | e.g., `TIER_1`, `CUSTOM`, `TIER_3`           |
-| base_cost              | NUMERIC   | Annual or monthly base plan cost             |
-| features_cost          | NUMERIC   | Sum of optional feature costs                |
-| total_cost             | NUMERIC   | Computed = base_cost + features_cost         |
-| currency               | TEXT      | e.g., `INR`, `USD`                           |
-| created_at             | TIMESTAMP | Onboarding timestamp                         |
+| Field                 | Type      | Description                           |
+|-----------------------|-----------|---------------------------------------|
+| id                    | UUID      | Unique account ID                     |
+| name                  | TEXT      | Full name                             |
+| code                  | TEXT      | e.g., `dps`                           |
+| schema_name           | TEXT      | PostgreSQL schema name                |
+| admin_email           | TEXT      | Main admin contact                    |
+| status                | TEXT      | `ACTIVE`, `DISABLED`, `TRIAL_EXPIRED` |
+| start_date            | DATE      | Date account was created or activated |
+| trial_end_date        | DATE      | Last day of trial period              |
+| is_trial              | BOOLEAN   | Indicates if account is in trial mode |
+| subscription_end_date | DATE      | Paid plan end date (if applicable)    |
+| plan_type             | TEXT      | e.g., `TIER_1`, `CUSTOM`, `TIER_3`    |
+| base_cost             | NUMERIC   | Annual or monthly base plan cost      |
+| features_cost         | NUMERIC   | Sum of optional feature costs         |
+| total_cost            | NUMERIC   | Computed = base_cost + features_cost  |
+| currency              | TEXT      | e.g., `INR`, `USD`                    |
+| created_at            | TIMESTAMP | Onboarding timestamp                  |
+| business_type         | TEXT      | 'SCHOOL', "INSTITUTE', 'COLLEGE'       |
 
 
 ### `billing_usage`
