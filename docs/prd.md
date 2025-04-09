@@ -2,7 +2,7 @@
 
 ## 🧭 Version Info
 **Version**: 2.2
-**Date**: April 2025
+**Date**: April 9th 2025
 **Author**: Surish
 
 ---
@@ -322,8 +322,6 @@ A dedicated Python-based microservice integrated via gRPC for:
 
 
 ---
-
-Let me know if you'd like a visual diagram showing **optional microservices separated from internal modules** in your architecture.
 
 ![Intyte_Flow.png](Intyte_Flow.png)
 
