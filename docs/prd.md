@@ -79,6 +79,7 @@ Instyte CRM is implemented using **Spring Modulith**, which organizes the entire
 
 ---
 
+
 ## 🌍 Subdomain Routing (Multi-Tenant UX Enhancement)
 
 Instyte CRM supports subdomain-level routing to offer a white-labeled, isolated experience for each tenant.
@@ -100,7 +101,6 @@ Instyte CRM supports subdomain-level routing to offer a white-labeled, isolated 
 
 ---
 
-![img_1.png](img_1.png)
 
 ## 🧩 Core Modules in Detail
 
@@ -427,8 +427,6 @@ Add to existing list:
 - REST API: `/search?q=keyword` with filters (e.g., date, type)
 - gRPC ingestion for data indexing
 
-
-![img.png](img.png)
 
 ---
 
