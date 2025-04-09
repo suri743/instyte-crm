@@ -23,11 +23,35 @@ The goal is to provide institutions with:
 - **Multi-Tenant SaaS** using **PostgreSQL** schema-per-tenant model
 - **Schema-per-branch** model to isolate data at the institution’s sub-unit level
 - **Role-Based Access Control (RBAC)** enforced using **JWT tokens**
-- **Spring Boot Modular Monolith** with clear domain-driven design
+- **Spring Modulith Architecture** with `@ApplicationModule` domain boundaries and intra-module event handling
 - **React-based UI** for Admins and Platform Owner
 - **API-First Design** using RESTful standards
 - **Cloud-Ready Deployment** (Docker, Kubernetes)
 - **High Performance with Horizontal Scaling Support**
+
+### 🧩 Spring Modulith Architecture (New)
+
+Instyte CRM is implemented using **Spring Modulith**, which organizes the entire application as a **modular monolith**, with independent domain modules communicating via Spring Events.
+
+| Module Name      | Purpose                                  |
+|------------------|-------------------------------------------|
+| `tenant`         | Tenant onboarding, schema management, billing usage |
+| `iam`            | Centralized identity and access control service |
+| `admin`          | Branch/user/role management              |
+| `feedback`       | NPS, star ratings, student feedback       |
+| `notification`   | WhatsApp/email notifications              |
+| `reporting`      | Charts and data exports                   |
+| `payment`        | Fee tracking and integration with gateway |
+| `preadmission`   | Lead capture and follow-up                |
+| `timeline`       | Activity timeline for students/events     |
+| `user`           | User profiles and roles                   |
+
+**Modulith Benefits:**
+- Maintains strong modular separation with `@ApplicationModule`
+- Event-driven architecture using Spring’s native `@EventListener`
+- Built-in support for testing and visualizing module boundaries
+- Future-ready for microservice extraction if needed
+- Cleaner code organization and scalable collaboration across teams
 
 ### 🌐 High-Level Design (HLD) Enhancements
 
@@ -75,6 +99,8 @@ Instyte CRM supports subdomain-level routing to offer a white-labeled, isolated 
 - Improved user trust
 
 ---
+
+![img_1.png](img_1.png)
 
 ## 🧩 Core Modules in Detail
 
@@ -400,6 +426,9 @@ Add to existing list:
 **Interfaces:**
 - REST API: `/search?q=keyword` with filters (e.g., date, type)
 - gRPC ingestion for data indexing
+
+
+![img.png](img.png)
 
 ---
 
