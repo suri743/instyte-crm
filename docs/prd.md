@@ -78,6 +78,7 @@ Instyte CRM is implemented using **Spring Modulith**, which organizes the entire
 - Background jobs using Quartz/Scheduler for syncs, reports, expiry reminders
 
 ---
+![Instyte_HLD.png](Instyte_HLD.png)
 
 
 ## 🌍 Subdomain Routing (Multi-Tenant UX Enhancement)
