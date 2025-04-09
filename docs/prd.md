@@ -1,7 +1,7 @@
 # 📘 Instyte CRM – Product Requirements Document (PRD) – Version 2
 
 ## 🧭 Version Info
-**Version**: 2.0
+**Version**: 2.2
 **Date**: April 2025
 **Author**: Surish
 
@@ -105,25 +105,46 @@ Instyte CRM supports subdomain-level routing to offer a white-labeled, isolated 
 
 ## 🧩 Core Modules in Detail
 
-### 🏢 PlatformService (Internal Only)
+### 🏢 TenantService (Internal Only)
 Handles:
 - Onboarding of new tenants (schools/orgs)
 - Creation of `schema_name`
 - Admin user creation
-- JWT issuance
 - Billing sync from all tenants
 
 **APIs**:
-- `POST /platform/tenants`
-- `POST /platform/tenants/{id}/users`
-- `POST /platform/login`
-- `POST /platform/sync-usage`
-- `GET /platform/billing-summary`
+- `POST /tenant/tenants`
+- `POST /tenant/login`
+- `POST /tenant/sync-usage`
+- `GET /tenant/billing-summary`
 
 **Tables**:
 - `public.tenants`
 - `public.users`
 - `public.billing_usage`
+
+---
+
+### 🔐 IAM Service
+Manages centralized authentication and role-based access control across the platform.
+
+Handles:
+- User login and JWT token issuance
+- Role validation and access checks
+- Permission mapping per role (RBAC)
+- Session and token management
+
+**APIs**:
+- `POST /iam/login` — Authenticate user and issue JWT
+- `GET /iam/validate` — Validate token and fetch current user info
+- `GET /iam/roles` — List available roles
+- `POST /iam/permissions/check` — Validate access for a specific route/resource
+
+**Tables**:
+- `roles` — List of all roles per tenant (`TENANT_ADMIN`, `STAFF`, etc.)
+- `permissions` — Permission map (service + action) for each role
+- `user_roles` — User-to-role mapping per branch or global
+- `refresh_tokens` — Optional table to store refresh token info
 
 ---
 
@@ -185,25 +206,47 @@ Manages all users within a tenant:
 
 ---
 
-### 📅 Attendance Service
+### 📅 Timeline Service
 Captures daily attendance across branches:
 - By student, date, subject
 - Attendance summary/reporting
 
 **APIs**:
-- `POST /attendance`
-- `GET /attendance/{studentId}`
-- `GET /attendance/summary`
-
-**Tables**:
-- `attendance`
+- `POST /timeline/attendance`
+- `POST /timeline/events`
+- `GET /timeline/attendance/{studentId}`
+- `GET /timeline/attendance/summary`
 
 ---
 
-## 🧩 Optional Services (Per Branch)
-These are modular services that tenants can subscribe to on a **per-branch basis**. PlatformService tracks all subscription and billing logic centrally.
+### 🛠 Event Service (New)
+Handles standardized event publication across the platform:
+- Publishes events like `LeadCreated`, `AttendanceMarked`, etc.
+- Used by Search Service and AI Engine
 
-### 🟡 Notification Service
+**Metadata Includes:**
+- `eventId`, `eventType`, `sourceService`, `timestamp`, `branchId`, `payload`
+
+**APIs/Methods:**
+- `publishLeadCreated(lead)`
+- `publishAttendanceMarked(attendance)`
+
+**Transport:**
+- RabbitMQ (planned)
+- gRPC (for immediate sync if needed)
+
+**Purpose:**
+- Loose coupling
+- Real-time integration
+- Future extensibility
+
+## 🧩 Optional Services (Per Branch)
+
+These are modular services that tenants can subscribe to on a **per-branch basis**. `TenantService` tracks all subscription and billing logic centrally.
+
+---
+
+### 💬 Notification Service
 - WhatsApp, SMS, email alerts
 - Automated reminders for follow-ups, leads, and attendance
 - Supports per-template customization
@@ -213,7 +256,9 @@ These are modular services that tenants can subscribe to on a **per-branch basis
 - `POST /notifications/template`
 - `GET /notifications/history`
 
-### 🟡 Feedback Service
+---
+
+### ⭐ Feedback Service
 - Student/parent feedback forms
 - Star ratings, NPS, open comments
 - Analytics dashboard per branch
@@ -223,7 +268,9 @@ These are modular services that tenants can subscribe to on a **per-branch basis
 - `POST /feedback/submit`
 - `GET /feedback/summary`
 
-### 🟡 Reporting Service
+---
+
+### 📊 Reporting Service
 - Visual dashboards (attendance, lead conversion, user activity)
 - Export reports to PDF, Excel
 
@@ -232,7 +279,9 @@ These are modular services that tenants can subscribe to on a **per-branch basis
 - `GET /reports/leads`
 - `GET /reports/usage`
 
-### 🟡 Payment Service
+---
+
+### 💳 Payment Service
 - Manage student fee collection
 - Track dues, payments, receipts
 - Optional Razorpay/Stripe integration
@@ -242,13 +291,41 @@ These are modular services that tenants can subscribe to on a **per-branch basis
 - `GET /payments/history`
 - `POST /payments/reminder`
 
-**Pricing (Add-ons)**:
-| Service       | Description                              | Price (INR)     |
-|---------------|------------------------------------------|------------------|
-| Notification  | WhatsApp/email alerts/reminders         | ₹2,500/month     |
-| Feedback      | Collect feedback + analytics             | ₹2,000/month     |
-| Reporting     | Dashboard + report downloads             | ₹1,500/month     |
-| Payment       | Fee tracking + optional gateway setup    | ₹2,500/month     |
+---
+
+### 🔍 Search Service *(Microservice)*
+- Real-time search with keyword + advanced filtering
+- Powered by Elasticsearch
+- Updated via Event Service or batch sync
+
+**APIs**:
+- `GET /search?q=keyword&filter=type`
+- `POST /search/index` *(internal, via EventService)*
+- gRPC ingestion for data indexing
+
+---
+
+### 🧠 AI Engine (New)
+A dedicated Python-based microservice integrated via gRPC for:
+- Real-time inference (via gRPC)
+- Offline training (via event queue or scheduled sync)
+- Receives data through `EventService` and gRPC calls
+
+**Features:**
+- Lead scoring (hot, warm, cold)
+- Attendance anomaly detection
+- Future: dropout risk prediction, feedback summarization
+
+**Interfaces:**
+- gRPC: `scoreLead`, `detectAnomaly`, `predictDropout`
+- Internal DB: JSON/CSV or Mongo/Postgres for training datasets
+
+
+---
+
+Let me know if you'd like a visual diagram showing **optional microservices separated from internal modules** in your architecture.
+
+![Intyte_Flow.png](Intyte_Flow.png)
 
 ---
 
@@ -259,24 +336,6 @@ These are modular services that tenants can subscribe to on a **per-branch basis
 | TENANT_ADMIN     | Their schema & branches         | Branches/users | Platform Admin   |
 | COUNSELOR        | Assigned branch only            | Leads, followups | Tenant Admin  |
 | STAFF            | Limited branch data             | View Only      | Tenant Admin     |
-
----
-
-## 🔄 JWT Token Format
-```json
-{
-  "sub": "admin@dps.com",
-  "tenant": "dps",
-  "role": "TENANT_ADMIN",
-  "iat": 1712330000,
-  "exp": 1712416400
-}
-```
-Used by all services for:
-- Dynamic schema routing
-- Role validation
-
----
 
 ## 💰 Pricing Model
 
@@ -291,7 +350,7 @@ Used by all services for:
 - Notification: ₹2,500/month
 - Feedback: ₹2,000/month
 - Reporting: ₹1,500/month
-- Payment: ₹2,500/month
+- Payment: ₹2,500/month etc.
 
 ---
 
@@ -307,18 +366,18 @@ Accessible only via PlatformService
 ---
 
 ## 🧪 Tech Stack
-| Layer              | Tech                           |
-|--------------------|----------------------------------|
-| Backend            | Spring Boot (Java)              |
-| Frontend           | React + Tailwind UI             |
-| Database           | PostgreSQL (schema-per-tenant, schema-per-branch)  |
-| Auth               | JWT (HS256)                     |
-| Caching            | Redis (planned)                 |
-| Messaging (future) | Kafka or RabbitMQ               |
-| Deployment         | Docker + Kubernetes             |
-| Monitoring         | Prometheus + Grafana            |
-| Gateway            | NGINX / Spring Cloud Gateway    |
-| Load Balancer      | Cloud LB per tenant             |
+| Layer              | Tech                                              |
+|--------------------|---------------------------------------------------|
+| Backend            | Spring Boot (Java)  , Spring Modulith             |
+| Frontend           | React + Tailwind UI                               |
+| Database           | PostgreSQL (schema-per-tenant, schema-per-branch) |
+| Auth               | JWT (HS256)                                       |
+| Caching            | Redis (planned)                                   |
+| Messaging (future) | Kafka or RabbitMQ                                 |
+| Deployment         | Docker + Kubernetes                               |
+| Monitoring         | Prometheus + Grafana                              |
+| Gateway            | NGINX / Spring Cloud Gateway                      |
+| Load Balancer      | Cloud LB per tenant                               |
 
 ---
 
@@ -350,89 +409,6 @@ Accessible only via PlatformService
 ---
 
 ## 🛣 Future Roadmap
-- IAM service as separate module
-- Payment Gateway integration
-- Custom white-label branding
-- Audit logging and history
-- Email/SMS config per tenant
-- Public self-onboarding portal
-- Subdomain routing (e.g., dps.instyte.com)
-- Global + Tenant-Level Load Balancers
-- Tenant-scoped API Gateway with circuit breakers
-
----
-
-✅ This Version 2 PRD reflects the **complete modular SaaS product model**, with detailed pricing, core + optional services (including Payment Service), platform owner visibility, subdomain routing, dedicated LB/API gateway per tenant, schema-per-branch support, and performance optimizations for enterprise readiness.
-
-# 📘 Instyte CRM – Product Requirements Document (PRD) – Version 2.1
-
-## 🧭 Version Info
-**Version**: 2.1
-**Date**: April 2025
-**Author**: Surish
-
----
-
-## 🧩 Core Modules in Detail
-
-### 🧠 AI Engine (New)
-A dedicated Python-based microservice integrated via gRPC for:
-- Real-time inference (via gRPC)
-- Offline training (via event queue or scheduled sync)
-- Receives data through `EventService` and gRPC calls
-
-**Features:**
-- Lead scoring (hot, warm, cold)
-- Attendance anomaly detection
-- Future: dropout risk prediction, feedback summarization
-
-**Interfaces:**
-- gRPC: `scoreLead`, `detectAnomaly`, `predictDropout`
-- Internal DB: JSON/CSV or Mongo/Postgres for training datasets
-
----
-
-### 🛠 Event Service (New)
-Handles standardized event publication across the platform:
-- Publishes events like `LeadCreated`, `AttendanceMarked`, etc.
-- Used by Search Service and AI Engine
-
-**Metadata Includes:**
-- `eventId`, `eventType`, `sourceService`, `timestamp`, `branchId`, `payload`
-
-**APIs/Methods:**
-- `publishLeadCreated(lead)`
-- `publishAttendanceMarked(attendance)`
-
-**Transport:**
-- RabbitMQ (planned)
-- gRPC (for immediate sync if needed)
-
-**Purpose:**
-- Loose coupling
-- Real-time integration
-- Future extensibility
-
----
-
-## 🧩 Optional Services (Per Branch)
-
-Add to existing list:
-
-### 🟡 Search Service (New)
-- Real-time search with advanced filters
-- Backed by Elasticsearch
-- Receives data from EventService or batch sync
-
-**Interfaces:**
-- REST API: `/search?q=keyword` with filters (e.g., date, type)
-- gRPC ingestion for data indexing
-
-
----
-
-## 🛣 Future Roadmap (Updated)
-- IAM service as separate module
 - Payment Gateway integration
 - Custom white-label branding
 - Audit logging and history
@@ -446,6 +422,3 @@ Add to existing list:
 - ✅ Search Service using Elasticsearch and gRPC indexing
 
 ---
-
-✅ This Version 2.1 PRD reflects the **complete modular SaaS product model**, with detailed pricing, core + optional services, platform owner visibility, schema-per-branch support, and now smart intelligence via AI Engine, standardized events, and a real-time search capability.
-
